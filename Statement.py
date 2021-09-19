@@ -11,4 +11,3 @@ def dateFormatter(Month, Frmt):
 Month = dateFormatter('07/01/2021', '%Y-%m')
 #myPath=os.listdir(r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + datetime.Month(_, '%Y-%m') + '/Formatted') 
 
-# these are my git learning changes
