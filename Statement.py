@@ -1,5 +1,3 @@
-# test 2 commit
-
 import pandas as pd
 from datetime import datetime
 import os
@@ -9,4 +7,6 @@ def dateFormatter(Month, Frmt):
     return x
 
 Month = dateFormatter('07/01/2021', '%Y-%m')
-#myPath= os.listdir(r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + datetime.Month(_, '%Y-%m') + '/Formatted')
+folderPath = os.listdir(r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/'+ Month + '/Formatted')
+filePicked = folderPath [folderPath.index('Stat')]
+print(filePicked)
