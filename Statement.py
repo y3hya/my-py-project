@@ -1,12 +1,10 @@
 import pandas as pd
 from datetime import datetime
-import os
+from tools import tools
+import glob
 
-def dateFormatter(Month, Frmt):
-    x = datetime.strftime(datetime.strptime(Month + ' 00:00:00', '%m/%d/%Y %H:%M:%S'), Frmt)
-    return x
 
-Month = dateFormatter('07/01/2021', '%Y-%m')
-folderPath = os.listdir(r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/'+ Month + '/Formatted')
-filePicked = folderPath [folderPath.index('Stat')]
-print(filePicked)
+# xyz = ''.join([x for x in folderPath if re.search('Stat', x)])
+Month = tools.dateFormatter('07/01/2021', '%Y-%m')
+file = tools.getLatestFileFromFolder(
+    r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + Month + '/Formatted/', 'stat', '.xlsx')
