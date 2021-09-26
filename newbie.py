@@ -10,10 +10,10 @@ from pandas.core.frame import DataFrame
 class newbieWars:
 
 
-def openPickle():
-    d = r"C:/Users/TMP-Yahya/Desktop/Stat.p"
-    df = pd.read_pickle(d)
-    return df
+    def openPickle(file=r"C:/Users/TMP-Yahya/Desktop/Stat.p"):
+        d = file
+        df = pd.read_pickle(d)
+        return df
 
 
 def filterNotNullColumn(df: DataFrame, columnName):

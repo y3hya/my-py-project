@@ -30,8 +30,11 @@ class tools:
     def toDate(date, format='%Y-%m-%d'):
         return datetime.strptime(date, format)
 
-    def exportToCsv(df, file_name, folder_path):
+    def exportToCsv(df, file_name='Statement.csv', folder_path=r"C:/Users/Yahya/Desktop/"):
         df.to_csv(folder_path + file_name, index=False)
+
+    def exportToExcel(df, file_name='Statement.xlsx', folder_path=r"C:/Users/Yahya/Desktop/"):
+        df.to_excel(folder_path + file_name, index=False)
 
     def dateFormatter(Month, Frmt):
         x = datetime.strftime(datetime.strptime(
@@ -41,3 +44,11 @@ class tools:
     def openExcelFile(fileLink):
         df = pd.read_excel(fileLink)
         return df
+
+    def openPickle(file=r"C:/Users/Yahya/Desktop/Stat.p"):
+        d = file
+        df = pd.read_pickle(d)
+        return df
+
+    def picklr(df, path=r"C:/Users/Yahya/Desktop/", file_name='Stat.p'):
+        df.to_pickle(path + file_name)
