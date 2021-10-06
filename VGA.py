@@ -1,68 +1,120 @@
-import pandas as pd
 from tools import tools
-from Statement import Month
+from sourcingMonthandPickle import Month
+import numpy as np
+import pandas as pd
 
-pd = tools.openPickle(r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + Month + '/Raw/detail.p')
-# pd = tools.openPickle() # -- To pcik pickle from desktop
-eliteAct = pd[
-    ((pd['Transaction Type'] == 'AT&T NEXT ACTIVATION') |
-     (pd['Transaction Type'] == 'NO-CONTRACT ACTIVATION') |
-     (pd['Transaction Type'] == 'FIRSTNET ACTIVATION')) &
-    (pd['Pay Method'] == 'QI_VOICE UNLIMITED ELITE') &
-    (pd['Month'] != '')
+df = tools.openPickle(
+    r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + Month + '/Raw/detail.p')
+
+# Replace 4 -- .Cut not working on dataframe -- need to research
+df['Activity Type'] = pd.cut(df.Value, bins=[-9999, -0.0001, 0.00001, 9999],labels=['DEACT', '0', 'ACT']) #-- Try 1
+# df['Activity Type'] = df.groupby('Value').apply(lambda x: pd.cut(x, bins=[-np.inf, 0, np.inf], labels=['DEACT', 'ACT'], duplicates='drop'))  # -- Try 2
+
+# Replace 3
+# df['Activity Type'] = np.where(df['Value'] > 0, 'ACT', 'DEACT')
+
+
+# Replace 2
+# df['Activity Type'] = df.replace(
+#     df['Value'] > 0, 'ACT', 'DEACT', inplace=True)
+
+# Replace 1
+# def new_func(df):
+#     a = []
+#     df = df[df['Value'].notnull()]
+#     for i in df['Value']:
+#         if i < 0:
+#             a += ['DEACT']
+#         else:
+#             if i > 0:
+#                 a += ['ACT']
+
+#     df['Activity Type'] = a
+#     return df
+# # if __name__ == "__main__":
+# df = new_func(df)
+#########################################################################################
+eliteAct = df[
+    ((df['Transaction Type'] == 'AT&T NEXT ACTIVATION') |
+     (df['Transaction Type'] == 'NO-CONTRACT ACTIVATION') |
+     (df['Transaction Type'] == 'FIRSTNET ACTIVATION')) &
+    (df['Pay Method'] == 'QI_VOICE UNLIMITED ELITE') &
+    (df['Month'] != '')  # Filters
 ]
 
-# C:\Dropbox\OpSupport Team Folder\Cell Shop\Commission\AT&T Reports\2021-07\Formatted  --
+# x = []
+# for i in eliteAct['Value']:
+#     if i > 0:
+#         x += [145]
+#     else:
+#         if i < 0:
+#             x += [-145]
 
-x = []
-for i in eliteAct['Value']:
-    if i > 0:
-        x += [145]
-    else:
-        if i < 0:
-            x += [-145]
-eliteAct.drop(columns='Value', axis=1, inplace=True)
-eliteAct['Value'] = (x)
+# eliteAct.drop(columns='Value', axis=1, inplace=True)  # removed Column
+# eliteAct['Value'] = (x)  # added Column
+eliteAct['Value'] = pd.cut(eliteAct.Value, bins=[-9999, -0.0001, 0.00001, 9999],labels=[-145, 0, 145])
 eliteAct['Type'] = 'Elite|Act'  # added Column
-
-extraAct = pd[
-    ((pd['Transaction Type'] == 'AT&T NEXT ACTIVATION') |
-     (pd['Transaction Type'] == 'NO-CONTRACT ACTIVATION') |
-     (pd['Transaction Type'] == 'FIRSTNET ACTIVATION')) &
-    ((pd['Pay Method'] == 'QI_FN VOICE PREMIUM') |
-     (pd['Pay Method'] == 'QI_MS VOICE PREMIUM')) &
-    (pd['Month'] != '')
+#########################################################################################
+extraAct = df[
+    ((df['Transaction Type'] == 'AT&T NEXT ACTIVATION') |
+     (df['Transaction Type'] == 'NO-CONTRACT ACTIVATION') |
+     (df['Transaction Type'] == 'FIRSTNET ACTIVATION')) &
+    ((df['Pay Method'] == 'QI_FN VOICE PREMIUM') |
+     (df['Pay Method'] == 'QI_MS VOICE PREMIUM')) &
+    (df['Month'] != '')  # Filters
 ]
 
-x = []
-for i in extraAct['Value']:
-    if i > 0:
-        x += [145]
-    else:
-        if i < 0:
-            x += [-145] 
-extraAct.drop(columns='Value', axis=1, inplace=True)  # removed Column
-extraAct['Value'] = (x)  # added Column
+# x = []
+# for i in extraAct['Value']:
+#     if i > 0:
+#         x += [145]
+#     elif i < 0:
+#         x += [-145]
+
+# extraAct.drop(columns='Value', axis=1, inplace=True)  # removed Column
+# extraAct['Value'] = (x)  # added Column
+extraAct['Value'] = pd.cut(eliteAct.Value, bins=[-9999, -0.0001, 0.00001, 9999],labels=[-145, 0, 145])
 extraAct['Type'] = 'Extra|Act'  # added Column
+#########################################################################################
+eliteExtra = eliteAct.append(extraAct)  # appended tables
 
-# append eliteAct & extraAct here
+# Filtered Column
+eliteExtraAct = eliteExtra[eliteExtra['Activity Type'] == 'ACT']
+eliteExtraAct = eliteExtraAct[['Mobile']]  # remove other column
+eliteExtraAct = eliteExtraAct.drop_duplicates(
+    ['Mobile'], keep='first')  # remove duplicates
 
-otherAct = pd[(pd['Value'] == 145) &
-              (pd['Transaction Type'].str.len() > 0 | pd['Transaction Type'].notnull())]  # filtered 145 in Value and non blanks & non nulls in Transaction Type
+
+# Filtered Column
+eliteExtraDeact = eliteExtra[eliteExtra['Activity Type'] == 'DEACT']
+eliteExtraDeact = eliteExtraDeact[['Mobile']]  # remove other column
+eliteExtraDeact = eliteExtraDeact.drop_duplicates(
+    ['Mobile'], keep='first')  # remove duplicates
+#########################################################################################
+otherAct = df[(df['Value'] == 145) &
+              (df['Transaction Type'].str.len() > 0 | df['Transaction Type'].notnull())]  # filtered 145 in Value and non blanks & non nulls in Transaction Type
 otherAct['Type'] = 'Other|Act'  # added Column
+otherAct['mob1'] = otherAct['Mobile'].map(dict(
+    zip(eliteExtraAct['Mobile'], eliteExtraAct['Mobile'])))  # Merge Tables
+otherAct = otherAct[(otherAct['mob1'].isnull())]  # Filtered Nulls
+otherAct = otherAct.drop(['mob1'], axis=1)  # Removed Column
 
-eliteExtraAct = eliteAct.append(extraAct)
-eliteExtraAct = eliteExtraAct.drop_duplicates(['Mobile'])
-eliteExtraAct = eliteExtraAct[['Mobile']]
-
-
-otherAct = otherAct.merge(eliteExtraAct, left_on='Mobile', right_on='Mobile') #--To Merge at the end
-
-finalElite = otherAct.append([eliteAct, extraAct], ignore_index=True)
-
+otherDeact = df[(df['Value'] == -145) &
+                (df['Transaction Type'].str.len() > 0 | df['Transaction Type'].notnull())]  # filtered 145 in Value and non blanks & non nulls in Transaction Type
+otherDeact['Type'] = 'Other|Act'  # added Column
+otherDeact = otherDeact.merge(eliteExtraDeact, on=['Mobile'], how='right')
+#########################################################################################
+finalElite = otherAct.append(
+    [eliteAct, extraAct], ignore_index=True)
+finalElite = finalElite[finalElite['Activity Type'].notnull()]
+# #########################################################################################
 # eliteAct.info()
+# if __name__ == "__main__":
+# tools.exportToCsv(df, 'df.csv')
 # tools.exportToCsv(otherAct, 'otherAct.csv')
+# tools.exportToCsv(otherDeact, 'otherDeact.csv')
 # tools.exportToCsv(eliteAct, 'eliteAct.csv')
 # tools.exportToCsv(extraAct, 'extraAct.csv')
 # tools.exportToCsv(eliteExtraAct, 'eliteExtraAct.csv')
+# tools.exportToCsv(eliteExtraDeact, 'eliteExtraDeact.csv')
 tools.exportToCsv(finalElite, 'finalElite.csv')

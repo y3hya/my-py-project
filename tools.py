@@ -2,16 +2,27 @@ import glob
 import os.path
 import sys
 from datetime import datetime
+
+# import os
+
+# os.environ["MODIN_ENGINE"] = "dask"  # Modin will use Dask
+# from distributed import Client
+# client = Client()
+# import modin.pandas as pd
+
 import pandas as pd
+
+# import dask.dataframe as dd
+# ddf = dd.pandas_from(dd)
 
 
 class tools:
 
     def getAllFilesFromFolder(folder_path, filename_contains, extension=''):
 
-        filename_contains = '\*'+filename_contains+'*'+extension
+        filename_contains = '\*' + filename_contains + '*' + extension
 
-        files = glob.glob(folder_path+filename_contains)
+        files = glob.glob(folder_path + filename_contains)
 
         if len(files) == 0:
             print('\033[91m'
@@ -48,6 +59,7 @@ class tools:
     def openPickle(file=r"C:/Users/Yahya/Desktop/Stat.p"):
         d = file
         df = pd.read_pickle(d)
+        # df = pd.dask.read_pickle(d)
         return df
 
     def picklr(df, path=r"C:/Users/Yahya/Desktop/", file_name='Stat.p'):
