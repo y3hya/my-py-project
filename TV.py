@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 df = tools.openPickle(
-    r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + Month + '/Raw/detail.p')
+    r'C:/Dropbox/OpSupport Team Folder/Cell Shop/Commission/AT&T Reports/' + Month + '/Raw/wired.p')
 
 # Filtered nulls in Comments column
 df = df[df['Comments'].isnull()]
